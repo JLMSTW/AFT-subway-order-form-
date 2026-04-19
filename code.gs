@@ -18,8 +18,8 @@ const SHEET_NAME = '訂餐記錄';
 function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
-    writeToSheet(data);
-    sendConfirmationEmail(data);
+    var orderNum = writeToSheet(data);
+    sendConfirmationEmail(data, orderNum);
     return ContentService
       .createTextOutput(JSON.stringify({ status: 'ok' }))
       .setMimeType(ContentService.MimeType.JSON);
@@ -82,10 +82,11 @@ function writeToSheet(data) {
   ]);
 
   sheet.autoResizeColumns(1, 11);
+  return orderNum;
 }
 
 // ── 寄確認信 ───────────────────────────────────────────
-function sendConfirmationEmail(data) {
+function sendConfirmationEmail(data, orderNum) {
   if (!data.email) return;
 
   var lang = data.lang || 'zh';
@@ -97,9 +98,9 @@ function sendConfirmationEmail(data) {
 
   // 多語標題
   var subjects = {
-    zh: '🥖 你的 Subway 訂餐確認',
-    en: '🥖 Your Subway Order Confirmation',
-    fr: '🥖 Confirmation de votre commande Subway'
+    zh: '🥖 復活節志工餐點確認信',
+    en: '🥖 Volunteer Lunch Confirmation (Easter)',
+    fr: '🥖 Confirmation du déjeuner des bénévoles (Pâques)'
   };
 
   var greetings = {
@@ -115,21 +116,21 @@ function sendConfirmationEmail(data) {
   };
 
   var labels = {
-    zh: { main:'主餐', bread:'麵包', cheese:'起司', vegi:'蔬菜', pickle:'醃製物', sauce:'醬汁', time:'填表時間' },
-    en: { main:'Main Dish', bread:'Bread', cheese:'Cheese', vegi:'Vegetables', pickle:'Pickles', sauce:'Sauce', time:'Submitted at' },
-    fr: { main:'Plat principal', bread:'Pain', cheese:'Fromage', vegi:'Légumes', pickle:'Condiments', sauce:'Sauce', time:'Soumis le' }
+    zh: { main:'主餐', bread:'麵包', cheese:'起司', vegi:'蔬菜', pickle:'醃製物', sauce:'醬汁', time:'填表時間', order:'訂單編號' },
+    en: { main:'Main Dish', bread:'Bread', cheese:'Cheese', vegi:'Vegetables', pickle:'Pickles', sauce:'Sauce', time:'Submitted at', order:'Order No.' },
+    fr: { main:'Plat principal', bread:'Pain', cheese:'Fromage', vegi:'Légumes', pickle:'Condiments', sauce:'Sauce', time:'Soumis le', order:'N° de commande' }
   };
 
   var L = labels[lang] || labels['zh'];
 
   // Plain text
   var rows = [
-    [L.main,   data.main],
-    [L.bread,  data.bread],
-    [L.cheese, data.cheese],
-    [L.vegi,   data.vegi],
-    [L.pickle, data.pickle],
-    [L.sauce,  data.sauce],
+    [L.main,   data.main_display || data.main],
+    [L.bread,  data.bread_display || data.bread],
+    [L.cheese, data.cheese_display || data.cheese],
+    [L.vegi,   data.vegi_display || data.vegi],
+    [L.pickle, data.pickle_display || data.pickle],
+    [L.sauce,  data.sauce_display || data.sauce],
   ];
 
   var orderText = rows.map(function(r) {
@@ -141,6 +142,7 @@ function sendConfirmationEmail(data) {
     '────────────────────\n' +
     orderText + '\n' +
     '────────────────────\n\n' +
+    '🔢 ' + L.order + '：#' + orderNum + '\n' +
     '📌 ' + L.time + '：' + timestamp + '\n\n' +
     (footers[lang] || footers['zh']);
 
@@ -163,6 +165,7 @@ function sendConfirmationEmail(data) {
     '<div style="padding:24px;">' +
     '<p style="color:#374151;line-height:1.7;margin-bottom:20px;">' + greetingHtml + '</p>' +
     '<table style="border-collapse:collapse;width:100%;margin-bottom:20px;">' + tableRows + '</table>' +
+    '<p style="font-size:0.85rem;color:#6b7280;">🔢 ' + L.order + '：<strong>#' + orderNum + '</strong></p>' +
     '<p style="font-size:0.85rem;color:#6b7280;">📌 ' + L.time + '：' + timestamp + '</p>' +
     '<p style="font-size:0.85rem;color:#dc2626;margin-top:12px;">' + footerHtml + '</p>' +
     '</div>' +

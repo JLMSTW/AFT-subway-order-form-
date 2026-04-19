@@ -372,9 +372,34 @@
     border-color: var(--green);
     box-shadow: 0 0 0 3px rgba(26,118,64,0.1);
   }
+
+/* ── Confirmation Modal ── */
+#confirm-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200; align-items:center; justify-content:center; padding:16px; }
+#confirm-modal.active { display:flex; }
+.confirm-card { background:#fff; border-radius:16px; max-width:480px; width:100%; padding:28px 24px; max-height:90vh; overflow-y:auto; }
+.confirm-title { font-size:1.15rem; font-weight:700; color:#1a7640; margin-bottom:18px; }
+.confirm-table { width:100%; border-collapse:collapse; margin-bottom:20px; }
+.confirm-table td { padding:8px 12px; border:1px solid #e5e7eb; font-size:0.9rem; }
+.confirm-table td:first-child { font-weight:600; color:#374151; background:#f9fafb; width:40%; }
+.confirm-actions { display:flex; gap:12px; }
+.btn-back { flex:1; padding:12px; border:2px solid #d1d5db; border-radius:8px; background:#fff; color:#374151; font-size:1rem; cursor:pointer; }
+.btn-confirm { flex:2; padding:12px; border:none; border-radius:8px; background:#1a7640; color:#fff; font-size:1rem; font-weight:700; cursor:pointer; }
+.btn-confirm:hover { background:#15623a; }
 </style>
 </head>
 <body>
+
+<!-- Confirmation Modal -->
+<div id="confirm-modal">
+  <div class="confirm-card">
+    <div class="confirm-title" id="confirm-title">確認您的訂單</div>
+    <table class="confirm-table" id="confirm-table"></table>
+    <div class="confirm-actions">
+      <button class="btn-back" id="btn-back" onclick="closeConfirm()">返回修改</button>
+      <button class="btn-confirm" id="btn-confirm" onclick="confirmAndSubmit()">確定送出</button>
+    </div>
+  </div>
+</div>
 
 <!-- Loading overlay -->
 <div id="loading-overlay">
@@ -757,7 +782,7 @@
 // ══════════════════════════════════════════════════════
 // !! 請在這裡填入你的 Google Apps Script Web App URL !!
 // ══════════════════════════════════════════════════════
-const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzsjL0LRQiHBbRNVrF0TGtCisLMNYS99rsBV8E3huohcRpvUeXGqaBXETCJGlaJ7KPi/exec';
 
 // ── i18n ──────────────────────────────────────────────
 const i18n = {
@@ -790,6 +815,9 @@ const i18n = {
     'notes-hint':    '如有特殊需求請說明',
     'selected':      '已選',
     'submit-btn':    '確認送出訂單',
+    'confirm-title': '確認您的訂單',
+    'btn-back':      '返回修改',
+    'btn-confirm':   '確定送出',
     'success-title': '訂單已送出！',
     'success-body':  '確認信已寄到您的 Email\n如有問題請聯絡活動負責人',
     'err-required':  '此欄為必填',
@@ -824,6 +852,9 @@ const i18n = {
     'notes-hint':    'Any special requests',
     'selected':      'Selected',
     'submit-btn':    'Submit Order',
+    'confirm-title': 'Review Your Order',
+    'btn-back':      'Go Back',
+    'btn-confirm':   'Confirm & Submit',
     'success-title': 'Order Submitted!',
     'success-body':  'A confirmation has been sent to your Email.\nContact the organiser if you have any questions.',
     'err-required':  'This field is required',
@@ -858,6 +889,9 @@ const i18n = {
     'notes-hint':    'Précisez toute demande spéciale',
     'selected':      'Sélectionné(s)',
     'submit-btn':    'Confirmer la commande',
+    'confirm-title': 'Vérifiez votre commande',
+    'btn-back':      'Retour',
+    'btn-confirm':   'Confirmer',
     'success-title': 'Commande envoyée !',
     'success-body':  'Un email de confirmation a été envoyé.\nContactez l\'organisateur en cas de problème.',
     'err-required':  'Ce champ est obligatoire',
@@ -917,6 +951,14 @@ const limits = { vegi: 5, pickle: 3, sauce: 2 };
 function getSelected(group) {
   return [...document.querySelectorAll(`[data-group="${group}"].selected`)]
     .map(el => el.dataset.value);
+}
+
+function getSelectedDisplay(group) {
+  return [...document.querySelectorAll(`[data-group="${group}"].selected`)]
+    .map(el => {
+      const span = el.querySelector(`span.${currentLang}`) || el.querySelector('span.zh');
+      return span ? span.textContent.trim() : el.dataset.value;
+    }).join('、');
 }
 
 function updateBadge(group, count, max) {
@@ -1026,28 +1068,81 @@ function showErr(errId, secId) {
 }
 
 // ── Submit ────────────────────────────────────────────
-async function submitOrder() {
+let _pendingPayload = null;
+
+function submitOrder() {
   if (!validate()) {
-    // Scroll to first error
     const first = document.querySelector('.has-error');
     if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
 
+  const zhMap = {
+    'Italian BMT': '義大利經典', 'Diced Beef': '厚切嫩牛', 'Subway Melt': '哈燒起司總匯',
+    'Italian White': '白麵包', 'Wheat': '小麥麵包', 'Parmesan Oregano': '巴馬乾酪麵包', 'Honey Oat': '蜂蜜燕麥麵包',
+    'Without Cheese': '不加起司', 'Triangle Cheese Slices': '三角切片起司', 'Shredded Cheddar': '切絲巧達起司',
+    'Without Vegi': '全不加蔬菜', 'Lettuce': '美生菜', 'Tomato': '番茄', 'Cucumber': '大黃瓜', 'Green Pepper': '青椒', 'Onion': '洋蔥',
+    'Without Pickles': '全不加醃漬物', 'Black Olives': '黑橄欖', 'Pickle': '酸黃瓜', 'Jalapeno': '墨西哥辣椒',
+    'Without Sauce': '全不加醬汁', 'Italian Dressing': '義大利油醋醬', 'Thousand Island': '千島醬',
+    'Chipotle Southwest': '墨西哥西南醬', 'Sweet Onion': '甜蔥醬', 'Honey Mustard': '蜂蜜芥末醬',
+    'Olive Oil Blend': '橄欖油', 'Mayonnaise': '美乃滋', 'Yellow Mustard': '黃芥末', 'Red Wine Vinegar': '紅酒醋',
+  };
+  const toZh = arr => arr.map(v => zhMap[v] || v).join('、');
+
   const payload = {
     name:   document.getElementById('field-name').value.trim(),
     line:   document.getElementById('field-line').value.trim(),
     email:  document.getElementById('field-email').value.trim(),
-    main:   getSelected('main').join(', '),
-    bread:  getSelected('bread').join(', '),
-    cheese: getSelected('cheese').join(', '),
-    vegi:   getSelected('vegi').join(', '),
-    pickle: getSelected('pickle').join(', '),
-    sauce:  getSelected('sauce').join(', '),
+    main:   toZh(getSelected('main')),
+    bread:  toZh(getSelected('bread')),
+    cheese: toZh(getSelected('cheese')),
+    vegi:   toZh(getSelected('vegi')),
+    pickle: toZh(getSelected('pickle')),
+    sauce:  toZh(getSelected('sauce')),
+    main_display:   getSelectedDisplay('main'),
+    bread_display:  getSelectedDisplay('bread'),
+    cheese_display: getSelectedDisplay('cheese'),
+    vegi_display:   getSelectedDisplay('vegi'),
+    pickle_display: getSelectedDisplay('pickle'),
+    sauce_display:  getSelectedDisplay('sauce'),
     lang:   currentLang,
   };
 
-  // Show loading
+  // Build confirm modal
+  _pendingPayload = payload;
+  const L = {
+    zh: { name:'名字', main:'主餐', bread:'麵包', cheese:'起司', vegi:'蔬菜', pickle:'醃製物', sauce:'醬汁' },
+    en: { name:'Name', main:'Main Dish', bread:'Bread', cheese:'Cheese', vegi:'Vegetables', pickle:'Pickles', sauce:'Sauce' },
+    fr: { name:'Prénom', main:'Plat principal', bread:'Pain', cheese:'Fromage', vegi:'Légumes', pickle:'Condiments', sauce:'Sauce' },
+  }[currentLang] || {};
+
+  const rows = [
+    [L.name,   payload.name],
+    [L.main,   payload.main_display || payload.main],
+    [L.bread,  payload.bread_display || payload.bread],
+    [L.cheese, payload.cheese_display || payload.cheese],
+    [L.vegi,   payload.vegi_display || payload.vegi],
+    [L.pickle, payload.pickle_display || payload.pickle],
+    [L.sauce,  payload.sauce_display || payload.sauce],
+  ];
+
+  document.getElementById('confirm-table').innerHTML = rows.map(r =>
+    `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`
+  ).join('');
+
+  const t = i18n[currentLang];
+  document.getElementById('confirm-title').textContent = t['confirm-title'];
+  document.getElementById('btn-back').textContent = t['btn-back'];
+  document.getElementById('btn-confirm').textContent = t['btn-confirm'];
+  document.getElementById('confirm-modal').classList.add('active');
+}
+
+function closeConfirm() {
+  document.getElementById('confirm-modal').classList.remove('active');
+}
+
+async function confirmAndSubmit() {
+  closeConfirm();
   document.getElementById('loading-overlay').classList.add('active');
   document.getElementById('submit-btn').disabled = true;
 
@@ -1056,10 +1151,9 @@ async function submitOrder() {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(_pendingPayload)
     });
 
-    // Show success (no-cors means we can't read response, assume success)
     document.getElementById('form-wrap').style.display = 'none';
     document.getElementById('success-screen').style.display = 'block';
     window.scrollTo({ top: 0, behavior: 'smooth' });
