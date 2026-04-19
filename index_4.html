@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subway 訂餐 | Order | Commander</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #1a7640;
+    --green-light: #e8f5ee;
+    --green-mid: #2d9b57;
+    --yellow: #f5c518;
+    --bg: #faf9f6;
+    --card: #ffffff;
+    --text: #1a1a1a;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --red: #dc2626;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--green);
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  }
+  .header-inner {
+    max-width: 680px;
+    margin: auto;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    font-family: 'Playfair Display', serif;
+    color: white;
+    font-size: 1.3rem;
+    letter-spacing: 0.02em;
+  }
+  .logo span { color: var(--yellow); }
+
+  /* Language switcher */
+  .lang-switcher {
+    display: flex;
+    gap: 4px;
+  }
+  .lang-btn {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+    letter-spacing: 0.03em;
+  }
+  .lang-btn:hover { background: rgba(255,255,255,0.25); }
+  .lang-btn.active { background: var(--yellow); color: var(--green); border-color: var(--yellow); font-weight: 500; }
+
+  /* ── Hero ── */
+  .hero {
+    background: linear-gradient(135deg, var(--green) 0%, var(--green-mid) 100%);
+    padding: 40px 20px 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: -30px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    color: white;
+    font-size: 2rem;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 1;
+  }
+  .hero p {
+    color: rgba(255,255,255,0.85);
+    font-size: 0.92rem;
+    font-weight: 300;
+    position: relative;
+    z-index: 1;
+    line-height: 1.6;
+  }
+
+  /* ── Form container ── */
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 28px 16px 60px;
+  }
+
+  /* ── Section card ── */
+  .section {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+    animation: fadeUp 0.4s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .section:nth-child(1) { animation-delay: 0.05s; }
+  .section:nth-child(2) { animation-delay: 0.10s; }
+  .section:nth-child(3) { animation-delay: 0.15s; }
+  .section:nth-child(4) { animation-delay: 0.20s; }
+  .section:nth-child(5) { animation-delay: 0.25s; }
+  .section:nth-child(6) { animation-delay: 0.30s; }
+  .section:nth-child(7) { animation-delay: 0.35s; }
+  .section:nth-child(8) { animation-delay: 0.40s; }
+
+  .section-label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 6px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+  .section-hint {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+  .required-star { color: var(--red); margin-left: 3px; }
+
+  /* ── Text input ── */
+  .text-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    color: var(--text);
+    background: white;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+  .text-input:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(26,118,64,0.1);
+  }
+  .text-input::placeholder { color: #bbb; }
+
+  /* ── Radio / Checkbox options ── */
+  .options-grid {
+    display: grid;
+    gap: 10px;
+  }
+  .option-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .option-item:hover { border-color: var(--green-mid); background: var(--green-light); }
+  .option-item.selected {
+    border-color: var(--green);
+    background: var(--green-light);
+  }
+  .option-item.selected .custom-check { background: var(--green); border-color: var(--green); }
+  .option-item.selected .custom-check::after { opacity: 1; }
+  .option-item.disabled-option {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  .custom-check {
+    width: 20px; height: 20px;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .custom-check.square { border-radius: 4px; }
+  .custom-check::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  /* radio dot */
+  .custom-check:not(.square)::after {
+    width: 8px; height: 8px;
+    background: white;
+    border-radius: 50%;
+  }
+  /* checkbox tick */
+  .custom-check.square::after {
+    width: 5px; height: 9px;
+    border: 2px solid white;
+    border-top: none;
+    border-left: none;
+    transform: translate(-50%, -60%) rotate(45deg);
+  }
+
+  .option-text { font-size: 0.93rem; line-height: 1.4; }
+  .option-text .zh { display: block; font-weight: 500; }
+  .option-text .en { display: block; font-size: 0.8rem; color: var(--muted); }
+  .option-text .fr { display: block; font-size: 0.8rem; color: var(--muted); font-style: italic; }
+
+  /* limit badge */
+  .limit-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.75rem;
+    background: var(--green-light);
+    color: var(--green);
+    border: 1px solid rgba(26,118,64,0.2);
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+    font-weight: 500;
+  }
+  .limit-badge.warning { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+  .limit-badge.full    { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+
+  /* ── Email input row ── */
+  .input-row { margin-bottom: 12px; }
+  .input-label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--muted);
+    margin-bottom: 6px;
+    letter-spacing: 0.02em;
+  }
+
+  /* ── Submit ── */
+  .submit-wrap { margin-top: 24px; }
+  .submit-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--green);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    letter-spacing: 0.03em;
+  }
+  .submit-btn:hover { background: var(--green-mid); }
+  .submit-btn:active { transform: scale(0.98); }
+  .submit-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+
+  /* ── Error messages ── */
+  .field-error {
+    font-size: 0.8rem;
+    color: var(--red);
+    margin-top: 6px;
+    display: none;
+  }
+  .field-error.visible { display: block; }
+  .section.has-error { border-color: #fca5a5; }
+
+  /* ── Success screen ── */
+  #success-screen {
+    display: none;
+    text-align: center;
+    padding: 60px 24px;
+    animation: fadeUp 0.5s ease;
+  }
+  .success-icon {
+    width: 72px; height: 72px;
+    background: var(--green-light);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 2rem;
+  }
+  #success-screen h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    color: var(--green);
+    margin-bottom: 10px;
+  }
+  #success-screen p {
+    color: var(--muted);
+    font-size: 0.92rem;
+    line-height: 1.7;
+  }
+
+  /* ── Loading overlay ── */
+  #loading-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+  }
+  #loading-overlay.active { display: flex; }
+  .spinner {
+    width: 48px; height: 48px;
+    border: 4px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Notes textarea */
+  .text-area {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.93rem;
+    color: var(--text);
+    resize: vertical;
+    min-height: 80px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .text-area:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(26,118,64,0.1);
+  }
+</style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div id="loading-overlay">
+  <div class="spinner"></div>
+</div>
+
+<!-- Header -->
+<header>
+  <div class="header-inner">
+    <div class="logo">🥖 <span>Subway</span> Order</div>
+    <div class="lang-switcher">
+      <button class="lang-btn active" onclick="setLang('zh')">中文</button>
+      <button class="lang-btn" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" onclick="setLang('fr')">FR</button>
+    </div>
+  </div>
+</header>
+
+<!-- Hero -->
+<div class="hero">
+  <h1 id="hero-title">活動訂餐</h1>
+  <p id="hero-sub">每人填寫一次，送出後無法修改<br>請確認後再按送出</p>
+</div>
+
+<!-- Form -->
+<div class="container">
+  <div id="form-wrap">
+
+    <!-- 1. Name -->
+    <div class="section" id="sec-name">
+      <div class="section-label" data-i18n="label-personal">個人資料</div>
+      <div class="section-title" data-i18n="name-title">希望大家叫你的名字<span class="required-star">*</span></div>
+      <div class="section-hint" data-i18n="name-hint">中文或英文皆可</div>
+      <input type="text" class="text-input" id="field-name" placeholder="e.g. Jenny / 小明" autocomplete="off">
+      <div class="field-error" id="err-name" data-i18n="err-required">此欄為必填</div>
+    </div>
+
+    <!-- 2. LINE -->
+    <div class="section" id="sec-line">
+      <div class="section-label" data-i18n="label-personal">個人資料</div>
+      <div class="section-title" data-i18n="line-title">LINE 名稱<span class="required-star">*</span></div>
+      <div class="section-hint" data-i18n="line-hint">請輸入目前的 LINE 顯示名稱</div>
+      <input type="text" class="text-input" id="field-line" placeholder="e.g. Jenny 🌸" autocomplete="off">
+      <div class="field-error" id="err-line" data-i18n="err-required">此欄為必填</div>
+    </div>
+
+    <!-- 3. Email -->
+    <div class="section" id="sec-email">
+      <div class="section-label" data-i18n="label-personal">個人資料</div>
+      <div class="section-title" data-i18n="email-title">Email<span class="required-star">*</span></div>
+      <div class="section-hint" data-i18n="email-hint">送出後會收到訂餐確認信</div>
+      <input type="email" class="text-input" id="field-email" placeholder="example@gmail.com" autocomplete="off">
+      <div class="field-error" id="err-email" data-i18n="err-email">請輸入有效的 Email</div>
+    </div>
+
+    <!-- 4. Main dish -->
+    <div class="section" id="sec-main">
+      <div class="section-label" data-i18n="label-main">主餐</div>
+      <div class="section-title" data-i18n="main-title">選擇主餐<span class="required-star">*</span></div>
+      <div class="section-hint" data-i18n="main-hint">以下均為 6 吋潛艇堡</div>
+      <div class="options-grid" id="opt-main">
+        <div class="option-item" data-group="main" data-value="Italian BMT">
+          <div class="custom-check"></div>
+          <div class="option-text">
+            <span class="zh">義大利經典</span>
+            <span class="en">6-Inch Italian B.M.T™ Sub</span>
+            <span class="fr">6 pouces Italian B.M.T™</span>
+          </div>
+        </div>
+        <div class="option-item" data-group="main" data-value="Diced Beef">
+          <div class="custom-check"></div>
+          <div class="option-text">
+            <span class="zh">厚切嫩牛</span>
+            <span class="en">6-Inch Diced Beef Sub</span>
+            <span class="fr">6 pouces Bœuf en dés</span>
+          </div>
+        </div>
+        <div class="option-item" data-group="main" data-value="Subway Melt">
+          <div class="custom-check"></div>
+          <div class="option-text">
+            <span class="zh">哈燒起司總匯</span>
+            <span class="en">6-Inch Subway Melt™ Sub</span>
+            <span class="fr">6 pouces Subway Melt™</span>
+          </div>
+        </div>
+      </div>
+      <div class="field-error" id="err-main" data-i18n="err-required">請選擇主餐</div>
+    </div>
+
+    <!-- 5. Bread -->
+    <div class="section" id="sec-bread">
+      <div class="section-label" data-i18n="label-bread">麵包</div>
+      <div class="section-title" data-i18n="bread-title">選擇麵包<span class="required-star">*</span></div>
+      <div class="section-hint" data-i18n="bread-hint">如售完依現場狀況代替</div>
+      <div class="options-grid" id="opt-bread">
+        <div class="option-item" data-group="bread" data-value="Italian White">
+          <div class="custom-check"></div>
+          <div class="option-text">
+            <span class="zh">白麵包</span>
+            <span class="en">Italian White</span>
+            <span class="fr">Pain blanc italien</span>
+          </div>
+        </div>
+        <div class="option-item" data-group="bread" data-value="Wheat">
+          <div class="custom-check"></div>
+          <div class="option-text">
+            <span class="zh">小麥麵包</span>
+            <span class="en">Wheat</span>
+            <span class="fr">Pain de blé</span>
+          </div>
+        </div>
+        <div class="option-item" data-group="bread" data-value="Parmesan Oregano">
+          <div class="custom-check"></div>
+          <div class="option-text">
+            <span class="zh">巴馬乾酪麵包</span>
+            <span class="en">Parmesan Oregano</span>
+            <span class="fr">Pain parmesan origan</span>
+          </div>
+        </div>
+        <div class="option-item" data-group="bread" data-value="Honey Oat">
+          <div class="custom-check"></div>
+          <div class="option-text">
+            <span class="zh">蜂蜜燕麥麵包</span>
+            <span class="en">Honey Oat</span>
+            <span class="fr">Pain avoine et miel</span>
+          </div>
+        </div>
+      </div>
+      <div class="field-error" id="err-bread" data-i18n="err-required">請選擇麵包</div>
+    </div>
+
+    <!-- 6. Cheese -->
+    <div class="section" id="sec-cheese">
+      <div class="section-label" data-i18n="label-cheese">起司</div>
+      <div class="section-title" data-i18n="cheese-title">選擇起司<span class="required-star">*</span></div>
+      <div class="options-grid" id="opt-cheese">
+        <div class="option-item" data-group="cheese" data-value="Without Cheese">
+          <div class="custom-check"></div>
+          <div class="option-text">
+            <span class="zh">不加起司</span>
+            <span class="en">Without Cheese</span>
+            <span class="fr">Sans fromage</span>
+          </div>
+        </div>
+        <div class="option-item" data-group="cheese" data-value="Triangle Cheese Slices">
+          <div class="custom-check"></div>
+          <div class="option-text">
+            <span class="zh">三角切片起司</span>
+            <span class="en">Triangle Cheese Slices</span>
+            <span class="fr">Tranches de fromage triangulaires</span>
+          </div>
+        </div>
+        <div class="option-item" data-group="cheese" data-value="Shredded Cheddar">
+          <div class="custom-check"></div>
+          <div class="option-text">
+            <span class="zh">切絲巧達起司</span>
+            <span class="en">Shredded Cheddar Cheese</span>
+            <span class="fr">Cheddar râpé</span>
+          </div>
+        </div>
+      </div>
+      <div class="field-error" id="err-cheese" data-i18n="err-required">請選擇起司</div>
+    </div>
+
+    <!-- 7. Vegetables (max 5) -->
+    <div class="section" id="sec-vegi">
+      <div class="section-label" data-i18n="label-vegi">蔬菜</div>
+      <div class="section-title" data-i18n="vegi-title">選擇蔬菜<span class="required-star">*</span></div>
+      <div class="limit-badge" id="badge-vegi">
+        <span data-i18n="selected">已選</span> <span id="count-vegi">0</span> / 5
+      </div>
+      <div class="options-grid" id="opt-vegi">
+        <div class="option-item" data-group="vegi" data-value="Without Vegi" data-exclusive="true">
+          <div class="custom-check square"></div>
+          <div class="option-text">
+            <span class="zh">全不加蔬菜</span>
+            <span class="en">Without Vegetables</span>
+            <span class="fr">Sans légumes</span>
+          </div>
+        </div>
+        <div class="option-item" data-group="vegi" data-value="Lettuce">
+          <div class="custom-check square"></div>
+          <div class="option-text">
+            <span class="zh">美生菜</span>
+            <span class="en">Lettuce</span>
+            <span class="fr">Laitue</span>
+          </div>
+        </div>
+        <div class="option-item" data-group="vegi" data-value="Tomato">
+          <div class="custom-check square"></div>
+          <div class="option-text">
+            <span class="zh">番茄</span>
+            <span class="en">Tomato</span>
+            <span class="fr">Tomate</span>
+          </div>
+        </div>
+        <div class="option-item" data-group="vegi" data-value="Cucumber">
+          <div class="custom-check square"></div>
+          <div class="option-text">
+            <span class="zh">大黃瓜</span>
+            <span class="en">Cucumber</span>
+            <span class="fr">Concombre</span>
+          </div>
+        </div>
+        <div class="option-item" data-group="vegi" data-value="Green Pepper">
+          <div class="custom-check square"></div>
+          <div class="option-text">
+            <span class="zh">青椒</span>
+            <span class="en">Green Pepper</span>
+            <span class="fr">Poivron vert</span>
+          </div>
+        </div>
+        <div class="option-item" data-group="vegi" data-value="Onion">
+          <div class="custom-check square"></div>
+          <div class="option-text">
+            <span class="zh">洋蔥</span>
+            <span class="en">Onion</span>
+            <span class="fr">Oignon</span>
+          </div>
+        </div>
+      </div>
+      <div class="field-error" id="err-vegi" data-i18n="err-required">請至少選擇一項</div>
+    </div>
+
+    <!-- 8. Pickles (max 3) -->
+    <div class="section" id="sec-pickle">
+      <div class="section-label" data-i18n="label-pickle">醃製物</div>
+      <div class="section-title" data-i18n="pickle-title">選擇醃製物<span class="required-star">*</span></div>
+      <div class="limit-badge" id="badge-pickle">
+        <span data-i18n="selected">已選</span> <span id="count-pickle">0</span> / 3
+      </div>
+      <div class="options-grid" id="opt-pickle">
+        <div class="option-item" data-group="pickle" data-value="Without Pickles" data-exclusive="true">
+          <div class="custom-check square"></div>
+          <div class="option-text">
+            <span class="zh">全不加醃漬物</span>
+            <span class="en">Without Pickles</span>
+            <span class="fr">Sans condiments</span>
+          </div>
+        </div>
+        <div class="option-item" data-group="pickle" data-value="Black Olives">
+          <div class="custom-check square"></div>
+          <div class="option-text">
+            <span class="zh">黑橄欖</span>
+            <span class="en">Black Olives</span>
+            <span class="fr">Olives noires</span>
+          </div>
+        </div>
+        <div class="option-item" data-group="pickle" data-value="Pickle">
+          <div class="custom-check square"></div>
+          <div class="option-text">
+            <span class="zh">酸黃瓜</span>
+            <span class="en">Pickle</span>
+            <span class="fr">Cornichon</span>
+          </div>
+        </div>
+        <div class="option-item" data-group="pickle" data-value="Jalapeno">
+          <div class="custom-check square"></div>
+          <div class="option-text">
+            <span class="zh">墨西哥辣椒</span>
+            <span class="en">Jalapeño</span>
+            <span class="fr">Jalapeño</span>
+          </div>
+        </div>
+      </div>
+      <div class="field-error" id="err-pickle" data-i18n="err-required">請至少選擇一項</div>
+    </div>
+
+    <!-- 9. Sauce (max 2) -->
+    <div class="section" id="sec-sauce">
+      <div class="section-label" data-i18n="label-sauce">醬汁</div>
+      <div class="section-title" data-i18n="sauce-title">選擇醬汁<span class="required-star">*</span></div>
+      <div class="limit-badge" id="badge-sauce">
+        <span data-i18n="selected">已選</span> <span id="count-sauce">0</span> / 2
+      </div>
+      <div class="options-grid" id="opt-sauce">
+        <div class="option-item" data-group="sauce" data-value="Without Sauce" data-exclusive="true">
+          <div class="custom-check square"></div>
+          <div class="option-text">
+            <span class="zh">全不加醬汁</span>
+            <span class="en">Without Sauce</span>
+            <span class="fr">Sans sauce</span>
+          </div>
+        </div>
+        <div class="option-item" data-group="sauce" data-value="Italian Dressing">
+          <div class="custom-check square"></div>
+          <div class="option-text">
+            <span class="zh">義大利油醋醬</span>
+            <span class="en">Italian Dressing</span>
+            <span class="fr">Vinaigrette italienne</span>
+          </div>
+        </div>
+        <div class="option-item" data-group="sauce" data-value="Thousand Island">
+          <div class="custom-check square"></div>
+          <div class="option-text">
+            <span class="zh">千島醬</span>
+            <span class="en">Thousand Island</span>
+            <span class="fr">Sauce mille-îles</span>
+          </div>
+        </div>
+        <div class="option-item" data-group="sauce" data-value="Chipotle Southwest">
+          <div class="custom-check square"></div>
+          <div class="option-text">
+            <span class="zh">墨西哥西南醬</span>
+            <span class="en">Chipotle Southwest</span>
+            <span class="fr">Sauce chipotle du Sud-Ouest</span>
+          </div>
+        </div>
+        <div class="option-item" data-group="sauce" data-value="Sweet Onion">
+          <div class="custom-check square"></div>
+          <div class="option-text">
+            <span class="zh">甜蔥醬</span>
+            <span class="en">Sweet Onion</span>
+            <span class="fr">Sauce oignon doux</span>
+          </div>
+        </div>
+        <div class="option-item" data-group="sauce" data-value="Honey Mustard">
+          <div class="custom-check square"></div>
+          <div class="option-text">
+            <span class="zh">蜂蜜芥末醬</span>
+            <span class="en">Honey Mustard</span>
+            <span class="fr">Moutarde au miel</span>
+          </div>
+        </div>
+        <div class="option-item" data-group="sauce" data-value="Olive Oil Blend">
+          <div class="custom-check square"></div>
+          <div class="option-text">
+            <span class="zh">橄欖油</span>
+            <span class="en">Olive Oil Blend</span>
+            <span class="fr">Huile d'olive</span>
+          </div>
+        </div>
+        <div class="option-item" data-group="sauce" data-value="Mayonnaise">
+          <div class="custom-check square"></div>
+          <div class="option-text">
+            <span class="zh">美乃滋</span>
+            <span class="en">Mayonnaise</span>
+            <span class="fr">Mayonnaise</span>
+          </div>
+        </div>
+        <div class="option-item" data-group="sauce" data-value="Yellow Mustard">
+          <div class="custom-check square"></div>
+          <div class="option-text">
+            <span class="zh">黃芥末</span>
+            <span class="en">Yellow Mustard</span>
+            <span class="fr">Moutarde jaune</span>
+          </div>
+        </div>
+        <div class="option-item" data-group="sauce" data-value="Red Wine Vinegar">
+          <div class="custom-check square"></div>
+          <div class="option-text">
+            <span class="zh">紅酒醋</span>
+            <span class="en">Red Wine Vinegar</span>
+            <span class="fr">Vinaigre de vin rouge</span>
+          </div>
+        </div>
+      </div>
+      <div class="field-error" id="err-sauce" data-i18n="err-required">請至少選擇一項</div>
+    </div>
+
+    <!-- Submit -->
+    <div class="submit-wrap">
+      <button class="submit-btn" id="submit-btn" onclick="submitOrder()">
+        <span data-i18n="submit-btn">確認送出訂單</span>
+      </button>
+    </div>
+
+  </div><!-- /form-wrap -->
+
+  <!-- Success screen -->
+  <div id="success-screen">
+    <div class="success-icon">✅</div>
+    <h2 data-i18n="success-title">訂單已送出！</h2>
+    <p data-i18n="success-body">確認信已寄到您的 Email<br>如有問題請聯絡活動負責人</p>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ══════════════════════════════════════════════════════
+// !! 請在這裡填入你的 Google Apps Script Web App URL !!
+// ══════════════════════════════════════════════════════
+const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
+
+// ── i18n ──────────────────────────────────────────────
+const i18n = {
+  zh: {
+    'hero-title':    '活動訂餐',
+    'hero-sub':      '每人填寫一次，送出後無法修改\n請確認後再按送出',
+    'label-personal':'個人資料',
+    'name-title':    '希望大家叫你的名字 *',
+    'name-hint':     '中文或英文皆可',
+    'line-title':    'LINE 名稱 *',
+    'line-hint':     '請輸入目前的 LINE 顯示名稱',
+    'email-title':   'Email *',
+    'email-hint':    '送出後會收到訂餐確認信',
+    'label-main':    '主餐',
+    'main-title':    '選擇主餐 *',
+    'main-hint':     '以下均為 6 吋潛艇堡',
+    'label-bread':   '麵包',
+    'bread-title':   '選擇麵包 *',
+    'bread-hint':    '如售完依現場狀況代替',
+    'label-cheese':  '起司',
+    'cheese-title':  '選擇起司 *',
+    'label-vegi':    '蔬菜',
+    'vegi-title':    '選擇蔬菜（最多 5 樣）*',
+    'label-pickle':  '醃製物',
+    'pickle-title':  '選擇醃製物（最多 3 樣）*',
+    'label-sauce':   '醬汁',
+    'sauce-title':   '選擇醬汁（最多 2 樣）*',
+    'label-notes':   '備註',
+    'notes-title':   '其他備註（選填）',
+    'notes-hint':    '如有特殊需求請說明',
+    'selected':      '已選',
+    'submit-btn':    '確認送出訂單',
+    'success-title': '訂單已送出！',
+    'success-body':  '確認信已寄到您的 Email\n如有問題請聯絡活動負責人',
+    'err-required':  '此欄為必填',
+    'err-email':     '請輸入有效的 Email',
+  },
+  en: {
+    'hero-title':    'Event Meal Order',
+    'hero-sub':      'One submission per person. Cannot be modified after submission.\nPlease review before confirming.',
+    'label-personal':'Personal Info',
+    'name-title':    'Your Preferred Name *',
+    'name-hint':     'Chinese or English',
+    'line-title':    'LINE Display Name *',
+    'line-hint':     'Enter your current LINE display name',
+    'email-title':   'Email *',
+    'email-hint':    'A confirmation will be sent to this address',
+    'label-main':    'Main Dish',
+    'main-title':    'Choose Your Sub *',
+    'main-hint':     'All options are 6-inch subs',
+    'label-bread':   'Bread',
+    'bread-title':   'Choose Your Bread *',
+    'bread-hint':    'Substitute may apply if sold out',
+    'label-cheese':  'Cheese',
+    'cheese-title':  'Choose Your Cheese *',
+    'label-vegi':    'Vegetables',
+    'vegi-title':    'Choose Vegetables (max 5) *',
+    'label-pickle':  'Pickles',
+    'pickle-title':  'Choose Pickles (max 3) *',
+    'label-sauce':   'Sauce',
+    'sauce-title':   'Choose Sauce (max 2) *',
+    'label-notes':   'Notes',
+    'notes-title':   'Additional Notes (optional)',
+    'notes-hint':    'Any special requests',
+    'selected':      'Selected',
+    'submit-btn':    'Submit Order',
+    'success-title': 'Order Submitted!',
+    'success-body':  'A confirmation has been sent to your Email.\nContact the organiser if you have any questions.',
+    'err-required':  'This field is required',
+    'err-email':     'Please enter a valid Email',
+  },
+  fr: {
+    'hero-title':    'Commander un repas',
+    'hero-sub':      'Une seule réponse par personne. Impossible de modifier après envoi.\nVeuillez vérifier avant de confirmer.',
+    'label-personal':'Informations personnelles',
+    'name-title':    'Votre prénom / surnom *',
+    'name-hint':     'En chinois ou en anglais',
+    'line-title':    'Pseudo LINE *',
+    'line-hint':     'Entrez votre pseudo LINE actuel',
+    'email-title':   'Email *',
+    'email-hint':    'Un email de confirmation vous sera envoyé',
+    'label-main':    'Plat principal',
+    'main-title':    'Choisissez votre sandwich *',
+    'main-hint':     'Toutes les options sont des sandwichs 6 pouces',
+    'label-bread':   'Pain',
+    'bread-title':   'Choisissez votre pain *',
+    'bread-hint':    'Substitution possible selon disponibilité',
+    'label-cheese':  'Fromage',
+    'cheese-title':  'Choisissez votre fromage *',
+    'label-vegi':    'Légumes',
+    'vegi-title':    'Choisissez vos légumes (max 5) *',
+    'label-pickle':  'Condiments',
+    'pickle-title':  'Choisissez vos condiments (max 3) *',
+    'label-sauce':   'Sauce',
+    'sauce-title':   'Choisissez votre sauce (max 2) *',
+    'label-notes':   'Remarques',
+    'notes-title':   'Remarques supplémentaires (facultatif)',
+    'notes-hint':    'Précisez toute demande spéciale',
+    'selected':      'Sélectionné(s)',
+    'submit-btn':    'Confirmer la commande',
+    'success-title': 'Commande envoyée !',
+    'success-body':  'Un email de confirmation a été envoyé.\nContactez l\'organisateur en cas de problème.',
+    'err-required':  'Ce champ est obligatoire',
+    'err-email':     'Veuillez entrer un email valide',
+  }
+};
+
+let currentLang = 'zh';
+
+function setLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.lang-btn[onclick="setLang('${lang}')"]`).classList.add('active');
+
+  // Update all i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (i18n[lang][key]) {
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+        el.placeholder = i18n[lang][key];
+      } else {
+        // preserve required star
+        const star = el.querySelector('.required-star');
+        el.textContent = i18n[lang][key];
+        if (star) el.appendChild(star);
+      }
+    }
+  });
+
+  // Hero special (has \n)
+  document.getElementById('hero-title').textContent = i18n[lang]['hero-title'];
+  document.getElementById('hero-sub').innerHTML = i18n[lang]['hero-sub'].replace(/\n/g, '<br>');
+
+  // Update lang attribute
+  document.documentElement.lang = lang === 'zh' ? 'zh-TW' : lang;
+
+  // Show/hide language spans in options
+  document.querySelectorAll('.option-text .zh').forEach(el => {
+    el.style.display = (lang === 'zh') ? 'block' : 'none';
+  });
+  document.querySelectorAll('.option-text .en').forEach(el => {
+    el.style.display = (lang === 'en' || lang === 'zh') ? 'block' : 'none';
+  });
+  document.querySelectorAll('.option-text .fr').forEach(el => {
+    el.style.display = (lang === 'fr') ? 'block' : 'none';
+  });
+
+  // Update badge text
+  updateBadge('vegi', getSelected('vegi').length, 5);
+  updateBadge('pickle', getSelected('pickle').length, 3);
+  updateBadge('sauce', getSelected('sauce').length, 2);
+}
+
+// ── Selection logic ───────────────────────────────────
+const limits = { vegi: 5, pickle: 3, sauce: 2 };
+
+function getSelected(group) {
+  return [...document.querySelectorAll(`[data-group="${group}"].selected`)]
+    .map(el => el.dataset.value);
+}
+
+function updateBadge(group, count, max) {
+  const badge = document.getElementById(`badge-${group}`);
+  const countEl = document.getElementById(`count-${group}`);
+  if (!badge || !countEl) return;
+  const selLabel = i18n[currentLang]['selected'] || '已選';
+  countEl.textContent = count;
+  badge.className = 'limit-badge';
+  if (count === max) badge.classList.add('full');
+  else if (count >= max - 1 && max > 1) badge.classList.add('warning');
+}
+
+document.querySelectorAll('.option-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const group = item.dataset.group;
+    const isExclusive = item.dataset.exclusive === 'true';
+    const isCheckbox = !!limits[group];
+
+    if (!isCheckbox) {
+      // Radio behaviour
+      document.querySelectorAll(`[data-group="${group}"]`).forEach(el => el.classList.remove('selected'));
+      item.classList.add('selected');
+      hideError('err-' + group);
+      return;
+    }
+
+    // Checkbox behaviour
+    if (isExclusive) {
+      // Exclusive: deselect all others
+      document.querySelectorAll(`[data-group="${group}"]`).forEach(el => {
+        el.classList.remove('selected', 'disabled-option');
+      });
+      item.classList.add('selected');
+    } else {
+      // Deselect exclusive option if present
+      const exclusiveEl = document.querySelector(`[data-group="${group}"][data-exclusive="true"]`);
+      if (exclusiveEl) exclusiveEl.classList.remove('selected');
+
+      if (item.classList.contains('selected')) {
+        item.classList.remove('selected');
+      } else {
+        const current = getSelected(group).length;
+        const max = limits[group];
+        if (current >= max) return; // silently block
+        item.classList.add('selected');
+      }
+    }
+
+    const count = getSelected(group).length;
+    const max = limits[group];
+    updateBadge(group, count, max);
+
+    // Disable unselected items when at limit (except exclusive)
+    document.querySelectorAll(`[data-group="${group}"]:not([data-exclusive="true"])`).forEach(el => {
+      if (!el.classList.contains('selected') && count >= max) {
+        el.classList.add('disabled-option');
+      } else {
+        el.classList.remove('disabled-option');
+      }
+    });
+
+    if (count > 0) hideError('err-' + group);
+  });
+});
+
+function hideError(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('visible');
+  const sec = el && el.closest('.section');
+  if (sec) sec.classList.remove('has-error');
+}
+
+// ── Validation ────────────────────────────────────────
+function validate() {
+  let ok = true;
+
+  const name = document.getElementById('field-name').value.trim();
+  if (!name) { showErr('err-name', 'sec-name'); ok = false; } else hideError('err-name');
+
+  const line = document.getElementById('field-line').value.trim();
+  if (!line) { showErr('err-line', 'sec-line'); ok = false; } else hideError('err-line');
+
+  const email = document.getElementById('field-email').value.trim();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showErr('err-email', 'sec-email'); ok = false;
+  } else hideError('err-email');
+
+  ['main','bread','cheese'].forEach(group => {
+    if (!getSelected(group).length) { showErr('err-' + group, 'sec-' + group); ok = false; }
+    else hideError('err-' + group);
+  });
+
+  ['vegi','pickle','sauce'].forEach(group => {
+    if (!getSelected(group).length) { showErr('err-' + group, 'sec-' + group); ok = false; }
+    else hideError('err-' + group);
+  });
+
+  return ok;
+}
+
+function showErr(errId, secId) {
+  const err = document.getElementById(errId);
+  if (err) err.classList.add('visible');
+  const sec = document.getElementById(secId);
+  if (sec) sec.classList.add('has-error');
+}
+
+// ── Submit ────────────────────────────────────────────
+async function submitOrder() {
+  if (!validate()) {
+    // Scroll to first error
+    const first = document.querySelector('.has-error');
+    if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  const payload = {
+    name:   document.getElementById('field-name').value.trim(),
+    line:   document.getElementById('field-line').value.trim(),
+    email:  document.getElementById('field-email').value.trim(),
+    main:   getSelected('main').join(', '),
+    bread:  getSelected('bread').join(', '),
+    cheese: getSelected('cheese').join(', '),
+    vegi:   getSelected('vegi').join(', '),
+    pickle: getSelected('pickle').join(', '),
+    sauce:  getSelected('sauce').join(', '),
+    lang:   currentLang,
+  };
+
+  // Show loading
+  document.getElementById('loading-overlay').classList.add('active');
+  document.getElementById('submit-btn').disabled = true;
+
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    // Show success (no-cors means we can't read response, assume success)
+    document.getElementById('form-wrap').style.display = 'none';
+    document.getElementById('success-screen').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  } catch (err) {
+    alert('送出失敗，請重試。\nFailed to submit, please try again.\nÉchec de l\'envoi, veuillez réessayer.');
+    document.getElementById('submit-btn').disabled = false;
+  } finally {
+    document.getElementById('loading-overlay').classList.remove('active');
+  }
+}
+
+// Init: show zh correctly
+setLang('zh');
+</script>
+</body>
+</html>
