@@ -250,6 +250,7 @@
   .option-text .zh { display: block; font-weight: 500; }
   .option-text .en { display: block; font-size: 0.8rem; color: var(--muted); }
   .option-text .fr { display: block; font-size: 0.8rem; color: var(--muted); font-style: italic; }
+  .option-text .desc { display: block; font-size: 0.75rem; color: var(--muted); margin-top: 3px; line-height: 1.4; }
 
   /* limit badge */
   .limit-badge {
@@ -467,6 +468,9 @@
             <span class="zh">義大利經典</span>
             <span class="en">6-Inch Italian B.M.T™ Sub</span>
             <span class="fr">6 pouces Italian B.M.T™</span>
+            <span class="desc zh">內含義式煙燻臘腸、義大利辣香腸、特選火腿及起司，5種新鮮蔬菜3種醃漬蔬菜任選。</span>
+            <span class="desc en">Smoked salami, pepperoni, ham &amp; cheese. Choice of 5 fresh vegetables &amp; 3 pickles.</span>
+            <span class="desc fr">Salami, pepperoni, jambon &amp; fromage. Choix de 5 légumes frais &amp; 3 condiments.</span>
           </div>
         </div>
         <div class="option-item" data-group="main" data-value="Diced Beef">
@@ -475,6 +479,9 @@
             <span class="zh">厚切嫩牛</span>
             <span class="en">6-Inch Diced Beef Sub</span>
             <span class="fr">6 pouces Bœuf en dés</span>
+            <span class="desc zh">內含特選嫩牛及起司，5種新鮮蔬菜3種醃漬蔬菜任選。</span>
+            <span class="desc en">Diced beef &amp; cheese. Choice of 5 fresh vegetables &amp; 3 pickles.</span>
+            <span class="desc fr">Bœuf en dés &amp; fromage. Choix de 5 légumes frais &amp; 3 condiments.</span>
           </div>
         </div>
         <div class="option-item" data-group="main" data-value="Subway Melt">
@@ -483,6 +490,9 @@
             <span class="zh">哈燒起司總匯</span>
             <span class="en">6-Inch Subway Melt™ Sub</span>
             <span class="fr">6 pouces Subway Melt™</span>
+            <span class="desc zh">內含切片火雞胸肉、特選火腿、培根及起司，5種新鮮蔬菜3種醃漬蔬菜任選。</span>
+            <span class="desc en">Turkey breast, ham, bacon &amp; cheese. Choice of 5 fresh vegetables &amp; 3 pickles.</span>
+            <span class="desc fr">Blanc de dinde, jambon, bacon &amp; fromage. Choix de 5 légumes frais &amp; 3 condiments.</span>
           </div>
         </div>
       </div>
@@ -936,6 +946,15 @@ function setLang(lang) {
     el.style.display = (lang === 'en' || lang === 'zh') ? 'block' : 'none';
   });
   document.querySelectorAll('.option-text .fr').forEach(el => {
+    el.style.display = (lang === 'fr') ? 'block' : 'none';
+  });
+  document.querySelectorAll('.option-text .desc.zh').forEach(el => {
+    el.style.display = (lang === 'zh') ? 'block' : 'none';
+  });
+  document.querySelectorAll('.option-text .desc.en').forEach(el => {
+    el.style.display = (lang === 'en') ? 'block' : 'none';
+  });
+  document.querySelectorAll('.option-text .desc.fr').forEach(el => {
     el.style.display = (lang === 'fr') ? 'block' : 'none';
   });
 
